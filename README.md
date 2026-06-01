@@ -21,7 +21,10 @@
 ```powershell
 git clone https://github.com/<your-org>/soft-copyright-application-skill.git
 cd soft-copyright-application-skill
-.\install.ps1
+.\install-gh.ps1          # 可选：安装 gh 并加入 PATH
+.\gh-login.ps1            # 登录 GitHub（首次发布需要）
+.\install.ps1             # 安装 Cursor Skill
+.\publish-github.ps1      # 可选：推送到你的 GitHub 仓库
 ```
 
 ```bash

@@ -28,8 +28,10 @@ if (-not $Gh) {
 }
 
 if ((Invoke-GhQuiet auth status) -ne 0) {
+    $GhCmd = if (Get-Command gh -ErrorAction SilentlyContinue) { "gh" } else { $Gh }
     Write-Host "[WARN] Not logged in to GitHub. Run:" -ForegroundColor Yellow
-    Write-Host "       gh auth login" -ForegroundColor Cyan
+    Write-Host "       .\gh-login.ps1" -ForegroundColor Cyan
+    Write-Host "   or: $GhCmd auth login" -ForegroundColor Cyan
     exit 1
 }
 
