@@ -14,16 +14,34 @@ description: >-
 ## 安装（从 GitHub / 本仓库）
 
 ```powershell
-git clone https://github.com/<your-org>/soft-copyright-application-skill.git
+git clone https://github.com/yunfanleoq/soft-copyright-application-skill.git
 cd soft-copyright-application-skill
 .\install.ps1
 ```
 
 ```bash
-git clone https://github.com/<your-org>/soft-copyright-application-skill.git
+git clone https://github.com/yunfanleoq/soft-copyright-application-skill.git
 cd soft-copyright-application-skill
 chmod +x install.sh && ./install.sh
 ```
+
+### IP Agent 项目内固化（推荐）
+
+[IPAgent](https://github.com/yunfanleoq/IPAgent) 已将本技能作为 **Git 子模块** 固化：
+
+| 路径 | 说明 |
+|------|------|
+| `.cursor/skills/soft-copyright-application/` | 子模块（本仓库） |
+| `.cursor/rules/soft-copyright-application.mdc` | Cursor 规则，软著相关对话自动关联 |
+| `soft-copyright/` | scope、手册、截图、输出 |
+| `soft-copyright/scripts/install_skill.ps1` | 初始化子模块并同步到全局 skills |
+
+```powershell
+git submodule update --init .cursor/skills/soft-copyright-application
+powershell -ExecutionPolicy Bypass -File soft-copyright\scripts\install_skill.ps1
+```
+
+生成操作手册 PDF：`soft-copyright\scripts\build_manual_pdf.ps1`（含截图与换行校验）。
 
 安装后重启 Cursor。也可手动将整个仓库（除 `.git`）复制到上述 skills 目录。详见 [README.md](README.md)。
 
