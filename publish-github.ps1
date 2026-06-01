@@ -1,6 +1,17 @@
-# Publish to GitHub (run gh auth login first)
+# Publish to GitHub (run: gh auth login)
 $ErrorActionPreference = "Stop"
 $RepoRoot = $PSScriptRoot
+
+function Invoke-GhQuiet {
+    param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Args)
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = "SilentlyContinue"
+    & $script:Gh @Args 2>&1 | Out-Null
+    $code = $LASTEXITCODE
+    $ErrorActionPreference = $prev
+    return $code
+}
+
 $Gh = $null
 if (Get-Command gh -ErrorAction SilentlyContinue) {
     $Gh = (Get-Command gh).Source
@@ -11,16 +22,14 @@ if (-not $Gh) {
 }
 
 if (-not $Gh) {
-    Write-Host "未找到 gh CLI。请先安装：" -ForegroundColor Yellow
-    Write-Host "  winget install GitHub.cli" -ForegroundColor Cyan
-    Write-Host "或下载: https://cli.github.com/" -ForegroundColor Cyan
+    Write-Host "[WARN] gh CLI not found. Install: winget install GitHub.cli" -ForegroundColor Yellow
+    Write-Host "       Or download from https://cli.github.com/" -ForegroundColor Yellow
     exit 1
 }
 
-& $Gh auth status 1>$null 2>$null
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Please login first:" -ForegroundColor Yellow
-    Write-Host "  $Gh auth login" -ForegroundColor Cyan
+if ((Invoke-GhQuiet auth status) -ne 0) {
+    Write-Host "[WARN] Not logged in to GitHub. Run:" -ForegroundColor Yellow
+    Write-Host "       gh auth login" -ForegroundColor Cyan
     exit 1
 }
 
@@ -31,16 +40,24 @@ git remote get-url origin 1>$null 2>$null
 if ($LASTEXITCODE -eq 0) { $hasOrigin = $true }
 
 if ($hasOrigin) {
-    Write-Host "Pushing to origin..." -ForegroundColor Cyan
+    Write-Host "[INFO] Pushing to origin..." -ForegroundColor Cyan
     git push -u origin main
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 } else {
+    Write-Host "[INFO] Creating GitHub repo and pushing..." -ForegroundColor Cyan
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = "SilentlyContinue"
     & $Gh repo create $Name --public `
         --description "Cursor Agent Skill for China software copyright application materials" `
         --source=. `
         --remote=origin `
-        --push
+        --push 2>&1 | ForEach-Object { Write-Host $_ }
+    $code = $LASTEXITCODE
+    $ErrorActionPreference = $prev
+    if ($code -ne 0) { exit $code }
 }
 
 Write-Host ""
-Write-Host "Repo URL:" -ForegroundColor Green
-& $Gh repo view --json url -q .url
+Write-Host "[OK] Repo URL:" -ForegroundColor Green
+$url = & $Gh repo view --json url -q .url 2>$null
+if ($url) { Write-Host $url -ForegroundColor Green }
