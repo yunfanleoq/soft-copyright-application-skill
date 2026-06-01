@@ -37,9 +37,7 @@ if ((Invoke-GhQuiet auth status) -ne 0) {
 
 Set-Location $RepoRoot
 $Name = "soft-copyright-application-skill"
-$hasOrigin = $false
-git remote get-url origin 1>$null 2>$null
-if ($LASTEXITCODE -eq 0) { $hasOrigin = $true }
+$hasOrigin = @(git remote 2>$null) -contains "origin"
 
 if ($hasOrigin) {
     Write-Host "[INFO] Pushing to origin..." -ForegroundColor Cyan
