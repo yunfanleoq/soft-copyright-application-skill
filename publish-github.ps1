@@ -1,11 +1,19 @@
 # Publish to GitHub (run gh auth login first)
 $ErrorActionPreference = "Stop"
 $RepoRoot = $PSScriptRoot
-$Gh = Get-ChildItem -Path "$env:LOCALAPPDATA\gh-cli" -Recurse -Filter gh.exe -ErrorAction SilentlyContinue |
-    Select-Object -First 1 -ExpandProperty FullName
+$Gh = $null
+if (Get-Command gh -ErrorAction SilentlyContinue) {
+    $Gh = (Get-Command gh).Source
+}
+if (-not $Gh) {
+    $Gh = Get-ChildItem -Path "$env:LOCALAPPDATA\gh-cli", "C:\Program Files\GitHub CLI" -Recurse -Filter gh.exe -ErrorAction SilentlyContinue |
+        Select-Object -First 1 -ExpandProperty FullName
+}
 
 if (-not $Gh) {
-    Write-Host "gh CLI not found under %LOCALAPPDATA%\gh-cli" -ForegroundColor Yellow
+    Write-Host "未找到 gh CLI。请先安装：" -ForegroundColor Yellow
+    Write-Host "  winget install GitHub.cli" -ForegroundColor Cyan
+    Write-Host "或下载: https://cli.github.com/" -ForegroundColor Cyan
     exit 1
 }
 
